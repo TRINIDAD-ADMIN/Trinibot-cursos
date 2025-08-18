@@ -5,3 +5,5 @@ mysql-connector-python==8.0.32
 requests==2.31.0
 beautifulsoup4==4.12.2
 gunicorn==21.2.0
+cryptography>=41.0.0
+lxml>=4.9.3
