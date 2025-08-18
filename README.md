@@ -35,23 +35,5 @@ Respeta términos de los sitios scrappeados. Usa el bot para información legal.
 - python -m data.scraper_coursera: Para coger datos en la plataforma
 - python -m data.verificador_cursos: Para verificar curso disponile y no disponible (eliminar en auto desde la db los cursos no disponibles)
 
-* python -m data.scraper_coursera_selenium
 
-**\*\***\*\*\***\*\***PLATAFORMAS QUE ESTAN PROTEGIDOS QIE NO SE PUEDEN SCRAPER NI CON SELENIUM
-Coursenavia,
-LearnViral sitio no disponible
-class central, acces limitados
-edx no tiene api
-coursera, respuetas de json, dificil de scrapear
-saylor academy: selector de categoria es por id, no es por nombre
-open who, api no disponible
 
-TP_2508_9156
-
-Nombre de la base de datos MySQL
-u749682169_trinibot_cursos
-
-Nombre de usuario MySQL
-u749682169_trinibot
-
-Contraseña\* Qd0g&KM=
