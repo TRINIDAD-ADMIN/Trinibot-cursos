@@ -18,8 +18,8 @@ def start(update: Update, context: CallbackContext):
     botones_extra = [
         [InlineKeyboardButton("🎁 Gratis", callback_data="filtro_gratis"),
          InlineKeyboardButton("💸 Descuento", callback_data="filtro_descuento")],
-        [InlineKeyboardButton("🌐 Visitar Web", url="https://tu-sitio.com")],
-        [InlineKeyboardButton("👨‍💻 Desarrollador", url="https://t.me/tu_usuario_telegram")]
+        [InlineKeyboardButton("🌐 Visitar Web", url="https://trinibot.trinovadevps.com/web/home.php")],
+        [InlineKeyboardButton("👨‍💻 Desarrollador", url="https://trinibot.trinovadevps.com/web/acerca.php")]
     ]
 
     # ✅ Obtenemos los botones de categorías (como lista interna)
@@ -50,7 +50,7 @@ def categoria_seleccionada(update: Update, context: CallbackContext):
 
     mensaje = "<b>Cursos disponibles:</b>\n\n"
     for r in recursos:
-        descripcion = r['descripcion'] if r['descripcion'] else "Sin descripción"
+        descripcion = (r['descripcion'][:100] + "...") if r['descripcion'] and len(r['descripcion']) > 100 else (r['descripcion'] if r['descripcion'] else "Sin descripción")
         fecha = r['fecha_publicacion'].strftime("%d-%m-%Y")
         mensaje += f"🎓 <b>{r['titulo']}</b>\n📝 {descripcion}\n🔗 <a href='{r['url']}'>Ver curso</a>\n📅 Publicado: {fecha}\n\n"
 
@@ -80,7 +80,7 @@ def filtro_cursos(update: Update, context: CallbackContext):
 
     mensaje = f"<b>{titulo}</b>\n\n"
     for r in recursos:
-        descripcion = r['descripcion'] if r['descripcion'] else "Sin descripción"
+        descripcion = (r['descripcion'][:100] + "...") if r['descripcion'] and len(r['descripcion']) > 100 else (r['descripcion'] if r['descripcion'] else "Sin descripción")
         fecha = r['fecha_publicacion'].strftime("%d-%m-%Y")
         mensaje += f"🎓 <b>{r['titulo']}</b>\n📝 {descripcion}\n🔗 <a href='{r['url']}'>Ver curso</a>\n📅 Publicado: {fecha}\n\n"
 
