@@ -12,9 +12,18 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Importar tu setup de handlers
 try:
-    from bot.handlers import setup_handlers
+    from bot.handlers import start, categoria_seleccionada, filtro_cursos
+    from telegram.ext import CommandHandler, CallbackQueryHandler
+    
+    def setup_handlers(dispatcher):
+        # Configurar tus handlers reales
+        dispatcher.add_handler(CommandHandler("start", start))
+        dispatcher.add_handler(CallbackQueryHandler(categoria_seleccionada, pattern=r"^cat_\d+$"))
+        dispatcher.add_handler(CallbackQueryHandler(filtro_cursos, pattern=r"^filtro_"))
+        logger.info("✅ Handlers configurados correctamente")
+        
 except ImportError as e:
-    print(f"⚠️ Error importando handlers: {e}")
+    logger.warning(f"⚠️ Error importando handlers: {e}")
     def setup_handlers(dispatcher):
         from telegram.ext import CommandHandler
         def start(update, context):
