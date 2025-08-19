@@ -1,78 +1,142 @@
 # webhook.py
 import os
+import sys
 from flask import Flask, request
 from telegram import Bot, Update
 from telegram.ext import Dispatcher
-from bot.dispatcher import setup_dispatcher
-from dotenv import load_dotenv
 import logging
+from threading import Thread
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
+# Agregar el directorio raíz al path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Importar tu setup de handlers
+try:
+    from bot.handlers import setup_handlers
+except ImportError as e:
+    print(f"⚠️ Error importando handlers: {e}")
+    def setup_handlers(dispatcher):
+        from telegram.ext import CommandHandler
+        def start(update, context):
+            update.message.reply_text('¡Bot funcionando en Render! 🌟')
+        def help_command(update, context):
+            update.message.reply_text('Bot desplegado exitosamente en Render.com')
+        dispatcher.add_handler(CommandHandler("start", start))
+        dispatcher.add_handler(CommandHandler("help", help_command))
+
+from dotenv import load_dotenv
+
+# Configurar logging para Render
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
 
 # =========================
-# Cargar variables
+# Cargar variables de entorno
 # =========================
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TOKEN:
-    raise ValueError("❌ TELEGRAM_BOT_TOKEN no encontrado en .env ni en variables de entorno")
+    logger.error("❌ TELEGRAM_BOT_TOKEN no encontrado")
+    raise ValueError("TELEGRAM_BOT_TOKEN requerido")
+
+logger.info(f"🤖 Bot token configurado: {TOKEN[:10]}...")
 
 # Crear bot y dispatcher
-bot = Bot(TOKEN)
-dispatcher = Dispatcher(bot, None, workers=0, use_context=True)
-setup_dispatcher(dispatcher)
+try:
+    bot = Bot(TOKEN)
+    dispatcher = Dispatcher(bot, None, workers=0, use_context=True)
+    setup_handlers(dispatcher)
+    logger.info("✅ Bot y dispatcher configurados correctamente")
+except Exception as e:
+    logger.error(f"❌ Error configurando bot: {e}")
+    raise
 
 # =========================
 # Flask App
 # =========================
 app = Flask(__name__)
 
+def process_update_background(update):
+    """Procesa el update en segundo plano para evitar timeouts"""
+    try:
+        if update.effective_message:
+            logger.info(f"📨 Procesando mensaje: '{update.effective_message.text[:50]}...' de usuario {update.effective_user.id}")
+        elif update.callback_query:
+            logger.info(f"🔘 Procesando callback: '{update.callback_query.data}' de usuario {update.effective_user.id}")
+        
+        dispatcher.process_update(update)
+        logger.info("✅ Update procesado exitosamente")
+        
+    except Exception as e:
+        logger.error(f"❌ Error procesando update: {e}", exc_info=True)
+
 @app.route("/webhook", methods=["POST"])
 def webhook():
     try:
-        print("=== WEBHOOK LLAMADO ===")
         json_data = request.get_json(force=True)
-        print(f"Datos recibidos: {json_data}")
         
         if json_data is None:
-            print("❌ No JSON data")
+            logger.warning("❌ No se recibió JSON data")
             return "No JSON data", 400
             
         update = Update.de_json(json_data, bot)
         if update is None:
-            print("❌ Invalid update")
+            logger.warning("❌ Update inválido recibido")
             return "Invalid update", 400
-            
-        print(f"✅ Update procesado: {update}")
         
-        # Responder rápido a Telegram ANTES de procesar
-        from threading import Thread
-        
-        def process_update_async():
-            try:
-                dispatcher.process_update(update)
-                print("✅ Dispatcher procesado correctamente")
-            except Exception as e:
-                print(f"❌ Error en dispatcher: {e}")
-                logging.error(f"Error en dispatcher: {e}")
-        
-        # Procesar en hilo separado para evitar timeout
-        thread = Thread(target=process_update_async)
+        # Procesar en hilo separado para responder rápido a Telegram
+        thread = Thread(target=process_update_background, args=(update,))
+        thread.daemon = True
         thread.start()
         
-        # Responder inmediatamente a Telegram
         return "OK", 200
         
     except Exception as e:
-        print(f"❌ Error processing webhook: {e}")
-        logging.error(f"Error processing webhook: {e}")
-        return "Error", 500
+        logger.error(f"❌ Error crítico en webhook: {e}", exc_info=True)
+        return "Internal Error", 500
 
 @app.route("/")
 def index():
-    return "Bot en línea ✅", 200
+    return "🤖 TriniBot Cursos Online - Powered by Render.com 🌟", 200
+
+@app.route("/health")
+def health():
+    try:
+        bot_info = bot.get_me()
+        return {
+            "status": "healthy", 
+            "bot_username": bot_info.username,
+            "bot_id": bot_info.id,
+            "service": "trinibot-cursos",
+            "platform": "Render.com",
+            "python_version": sys.version
+        }, 200
+    except Exception as e:
+        logger.error(f"❌ Health check falló: {e}")
+        return {"status": "unhealthy", "error": str(e)}, 500
+
+@app.route("/status")
+def status():
+    return {
+        "service": "TriniBot Cursos",
+        "version": "2.0",
+        "platform": "Render.com",
+        "status": "running"
+    }, 200
+
+# Endpoint para despertar el servicio (Render lo duerme después de 15 min)
+@app.route("/wake")
+def wake():
+    logger.info("🔔 Servicio despertado")
+    return "Service awake", 200
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    logger.info(f"🚀 Iniciando TriniBot en puerto {port}")
+    logger.info(f"🌍 Plataforma: Render.com")
+    app.run(host="0.0.0.0", port=port, debug=False)
