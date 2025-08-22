@@ -6,12 +6,53 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from db.models import obtener_recursos_por_tipo
 from bot.buttons import generar_botones_categorias
 
+def mostrar_menu_principal(update: Update, context: CallbackContext):
+    """Función para mostrar el menú principal con los 3 botones"""
+    if update.callback_query:
+        chat_id = update.callback_query.message.chat_id
+        query = update.callback_query
+    else:
+        chat_id = update.effective_chat.id
+        query = None
+
+    # ✅ Los tres botones principales
+    teclado = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📚 Categorías de Cursos", callback_data="mostrar_categorias")],
+        [InlineKeyboardButton("👤 Acerca del desarrollador", url="https://trinibot.trinovadevps.com/web/acerca.php")],
+        [InlineKeyboardButton("⚙️ Panel web", url="https://trinibot.trinovadevps.com/web/home.php")],
+    ])
+
+    mensaje = (
+        "👋 <b>Bienvenido/a al Bot de Cursos Gratuitos</b> 🎓\n\n"
+        "🔍 Aquí encontrarás <b>cursos 100% gratis</b> o con grandes <b>descuentos</b> de plataformas como Udemy, Coursera y más.\n\n"
+        "🗂 Selecciona una opción para comenzar:"
+    )
+
+    if query:
+        context.bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=query.message.message_id,
+            text=mensaje,
+            reply_markup=teclado,
+            parse_mode='HTML'
+        )
+        query.answer()
+    else:
+        context.bot.send_message(chat_id=chat_id, text=mensaje, reply_markup=teclado, parse_mode='HTML')
+
 def start(update: Update, context: CallbackContext):
-    chat_id = update.effective_chat.id
+    """Comando /start - ahora muestra el menú principal"""
+    mostrar_menu_principal(update, context)
+
+def mostrar_categorias(update: Update, context: CallbackContext):
+    """Muestra las categorías de cursos"""
+    query = update.callback_query
+    chat_id = query.message.chat_id
 
     categorias = obtener_categorias()
     if not categorias:
         context.bot.send_message(chat_id, "⚠️ No hay categorías disponibles por ahora.")
+        query.answer()
         return
 
     # ✅ Botones extra (en la parte superior)
@@ -19,22 +60,30 @@ def start(update: Update, context: CallbackContext):
         [InlineKeyboardButton("🎁 Gratis", callback_data="filtro_gratis"),
          InlineKeyboardButton("💸 Descuento", callback_data="filtro_descuento")],
         [InlineKeyboardButton("🌐 Visitar Web", url="https://trinibot.trinovadevps.com/web/home.php")],
-        [InlineKeyboardButton("👨‍💻 Desarrollador", url="https://trinibot.trinovadevps.com/web/acerca.php")]
     ]
 
     # ✅ Obtenemos los botones de categorías (como lista interna)
     teclado_categorias = generar_botones_categorias(categorias).inline_keyboard
 
+    # ✅ Botón para volver al menú principal
+    boton_volver = [[InlineKeyboardButton("🔙 Volver al menú principal", callback_data="menu_principal")]]
+
     # ✅ Concatenamos las listas internas correctamente
-    teclado = InlineKeyboardMarkup(botones_extra + teclado_categorias)
+    teclado = InlineKeyboardMarkup(botones_extra + teclado_categorias + boton_volver)
 
     mensaje = (
-        "👋 <b>Bienvenido/a al Bot de Cursos Gratuitos</b> 🎓\n\n"
-        "🔍 Aquí encontrarás <b>cursos 100% gratis</b> o con grandes <b>descuentos</b> de plataformas como Udemy, Coursera y más.\n\n"
-        "🗂 Selecciona una categoría o aplica un filtro para comenzar:"
+        "📚 <b>Categorías de Cursos Disponibles</b> 🎓\n\n"
+        "🔍 Selecciona una categoría o aplica un filtro para ver los cursos:"
     )
 
-    context.bot.send_message(chat_id=chat_id, text=mensaje, reply_markup=teclado, parse_mode='HTML')
+    context.bot.edit_message_text(
+        chat_id=chat_id,
+        message_id=query.message.message_id,
+        text=mensaje,
+        reply_markup=teclado,
+        parse_mode='HTML'
+    )
+    query.answer()
 
 def categoria_seleccionada(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -54,7 +103,12 @@ def categoria_seleccionada(update: Update, context: CallbackContext):
         fecha = r['fecha_publicacion'].strftime("%d-%m-%Y")
         mensaje += f"🎓 <b>{r['titulo']}</b>\n📝 {descripcion}\n🔗 <a href='{r['url']}'>Ver curso</a>\n📅 Publicado: {fecha}\n\n"
 
-    context.bot.send_message(chat_id, text=mensaje, parse_mode='HTML', disable_web_page_preview=True)
+    # ✅ Botón para volver al menú principal al final
+    teclado_volver = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Volver al menú principal", callback_data="menu_principal")]
+    ])
+
+    context.bot.send_message(chat_id, text=mensaje, parse_mode='HTML', disable_web_page_preview=True, reply_markup=teclado_volver)
     query.answer()
 
 
@@ -84,5 +138,10 @@ def filtro_cursos(update: Update, context: CallbackContext):
         fecha = r['fecha_publicacion'].strftime("%d-%m-%Y")
         mensaje += f"🎓 <b>{r['titulo']}</b>\n📝 {descripcion}\n🔗 <a href='{r['url']}'>Ver curso</a>\n📅 Publicado: {fecha}\n\n"
 
-    context.bot.send_message(chat_id, text=mensaje, parse_mode='HTML', disable_web_page_preview=True)
+    # ✅ Botón para volver al menú principal al final
+    teclado_volver = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Volver al menú principal", callback_data="menu_principal")]
+    ])
+
+    context.bot.send_message(chat_id, text=mensaje, parse_mode='HTML', disable_web_page_preview=True, reply_markup=teclado_volver)
     query.answer()

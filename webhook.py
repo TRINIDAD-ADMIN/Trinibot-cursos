@@ -1,7 +1,9 @@
+# webhook.py
+
 import os
 import sys
 from flask import Flask, request
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, Update
 from telegram.ext import Dispatcher
 import logging
 from threading import Thread
@@ -9,47 +11,37 @@ from threading import Thread
 # Agregar el directorio raíz al path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# =========================
-# Nuevo handler start con botones
-# =========================
-def start(update, context):
-    keyboard = [
-        [InlineKeyboardButton("📚 Categorías de Cursos", callback_data="cat_menu")],
-        [InlineKeyboardButton("👤 Acerca del desarrollador", url="https://trinibot.trinovadevps.com/web/acerca.php")],
-        [InlineKeyboardButton("⚙️ Panel web", url="https://trinibot.trinovadevps.com/web/home.php")],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    update.message.reply_text(
-        "👋 ¡Bienvenido a *TriniBot Cursos*! 🚀\n\n"
-        "Explora cursos gratuitos online y administra tus recursos de aprendizaje.\n\n"
-        "Selecciona una opción del menú:",
-        reply_markup=reply_markup,
-        parse_mode="Markdown"
-    )
-
 # Importar tu setup de handlers
 try:
-    from bot.handlers import categoria_seleccionada, filtro_cursos
+    from bot.handlers import start, categoria_seleccionada, filtro_cursos, mostrar_categorias, mostrar_menu_principal
     from telegram.ext import CommandHandler, CallbackQueryHandler
     
+   
+
     def setup_handlers(dispatcher):
         # Configurar tus handlers reales
         dispatcher.add_handler(CommandHandler("start", start))
-        dispatcher.add_handler(CallbackQueryHandler(categoria_seleccionada, pattern=r"^cat_"))
+        dispatcher.add_handler(CallbackQueryHandler(categoria_seleccionada, pattern=r"^cat_\d+$"))
         dispatcher.add_handler(CallbackQueryHandler(filtro_cursos, pattern=r"^filtro_"))
+        
+        # ✅ NUEVOS HANDLERS - Agregar estas 2 líneas:
+        dispatcher.add_handler(CallbackQueryHandler(mostrar_categorias, pattern="^mostrar_categorias$"))
+        dispatcher.add_handler(CallbackQueryHandler(mostrar_menu_principal, pattern="^menu_principal$"))
+        
         logger.info("✅ Handlers configurados correctamente")
         
 except ImportError as e:
     logger.warning(f"⚠️ Error importando handlers: {e}")
     def setup_handlers(dispatcher):
         from telegram.ext import CommandHandler
-        def start_fallback(update, context):
+        def start(update, context):
             update.message.reply_text('¡Bot funcionando en Render! 🌟')
         def help_command(update, context):
             update.message.reply_text('Bot desplegado exitosamente en Render.com')
-        dispatcher.add_handler(CommandHandler("start", start_fallback))
+        dispatcher.add_handler(CommandHandler("start", start))
         dispatcher.add_handler(CommandHandler("help", help_command))
+
+from dotenv import load_dotenv
 
 # Configurar logging para Render
 logging.basicConfig(
@@ -62,6 +54,8 @@ logger = logging.getLogger(__name__)
 # =========================
 # Cargar variables de entorno
 # =========================
+load_dotenv()
+
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TOKEN:
     logger.error("❌ TELEGRAM_BOT_TOKEN no encontrado")
@@ -163,3 +157,4 @@ if __name__ == "__main__":
     logger.info(f"🚀 Iniciando TriniBot en puerto {port}")
     logger.info(f"🌍 Plataforma: Render.com")
     app.run(host="0.0.0.0", port=port, debug=False)
+    
