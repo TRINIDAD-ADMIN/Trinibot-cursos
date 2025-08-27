@@ -1,4 +1,4 @@
-name: Ejecutar Verificador de Cursos para prueba rapido
+name: Ejecutar Verificador de Cursos oficial
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
    # TEMPORAL - Cada 5 minutos para pruebas
     - cron: '*/5 * * * *'
     # Para ejecutar cada 2 días, descomenta la siguiente línea y comenta la de arriba
-    # - cron: '0 9 */2 * *'
+   - cron: '0 3 */2 * *' 
   
   # Permitir ejecución manual desde GitHub
   workflow_dispatch:
