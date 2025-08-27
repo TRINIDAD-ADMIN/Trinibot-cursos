@@ -1,12 +1,8 @@
-name: Ejecutar Verificador de Cursos oficial
+name: Ejecutar Verificador de Cursos oficiall
 
 on:
   schedule:
-    # Ejecutar cada día a las 9:00 AM UTC (ajusta según tu zona horaria)
-   # TEMPORAL - Cada 5 minutos para pruebas
-    - cron: '*/5 * * * *'
-    # Para ejecutar cada 2 días, descomenta la siguiente línea y comenta la de arriba
-   - cron: '0 3 */2 * *' 
+   - cron: '0 3 */2 * *'  # Cada 2 días a las 9:00 AM UTC
   
   # Permitir ejecución manual desde GitHub
   workflow_dispatch:
