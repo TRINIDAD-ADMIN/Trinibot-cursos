@@ -97,24 +97,44 @@ def categoria_seleccionada(update: Update, context: CallbackContext):
         query.answer()
         return
 
-    mensaje = "<b>Cursos disponibles:</b>\n\n"
-    for r in recursos:
-        descripcion = (r['descripcion'][:100] + "...") if r['descripcion'] and len(r['descripcion']) > 100 else (r['descripcion'] if r['descripcion'] else "Sin descripción")
-        fecha = r['fecha_publicacion'].strftime("%d-%m-%Y")
-        mensaje += f"🎓 <b>{r['titulo']}</b>\n📝 {descripcion}\n🔗 <a href='{r['url']}'>Ver curso</a>\n📅 Publicado: {fecha}\n\n"
-
-    # ✅ Botón para volver al menú principal al final
-    # ✅ Botón para ver más en el panel web o volver al menú
-teclado_volver = InlineKeyboardMarkup([
-    [InlineKeyboardButton("🌐 Ver más en el Panel Web", url="https://trinibot.trinovadevps.com/web/home.php")],
-    [InlineKeyboardButton("🔙 Volver al menú principal", callback_data="menu_principal")]
-])
-
+    # Verificar si hay muchos cursos para implementar paginación
+    CURSOS_POR_PAGINA = 10
+    total_cursos = len(recursos)
+    
+    if total_cursos > CURSOS_POR_PAGINA:
+        # Si hay más de 10 cursos, mostrar solo los primeros 10 y redirigir al panel web
+        recursos = recursos[:CURSOS_POR_PAGINA]
+        mensaje = f"<b>📚 Primeros {CURSOS_POR_PAGINA} cursos de {total_cursos} disponibles:</b>\n\n"
+        
+        for r in recursos:
+            descripcion = (r['descripcion'][:100] + "...") if r['descripcion'] and len(r['descripcion']) > 100 else (r['descripcion'] if r['descripcion'] else "Sin descripción")
+            fecha = r['fecha_publicacion'].strftime("%d-%m-%Y")
+            mensaje += f"🎓 <b>{r['titulo']}</b>\n📝 {descripcion}\n🔗 <a href='{r['url']}'>Ver curso</a>\n📅 Publicado: {fecha}\n\n"
+        
+        mensaje += f"<i>💡 Hay {total_cursos - CURSOS_POR_PAGINA} cursos más disponibles en el panel web.</i>"
+        
+        # Teclado con énfasis en ver todos los cursos en el panel web
+        teclado_volver = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Ver TODOS los cursos en el Panel Web", url="https://trinibot.trinovadevps.com/web/home.php")],
+            [InlineKeyboardButton("🔙 Volver al menú principal", callback_data="menu_principal")]
+        ])
+    else:
+        # Si hay 10 cursos o menos, mostrar todos normalmente
+        mensaje = "<b>📚 Cursos disponibles:</b>\n\n"
+        
+        for r in recursos:
+            descripcion = (r['descripcion'][:100] + "...") if r['descripcion'] and len(r['descripcion']) > 100 else (r['descripcion'] if r['descripcion'] else "Sin descripción")
+            fecha = r['fecha_publicacion'].strftime("%d-%m-%Y")
+            mensaje += f"🎓 <b>{r['titulo']}</b>\n📝 {descripcion}\n🔗 <a href='{r['url']}'>Ver curso</a>\n📅 Publicado: {fecha}\n\n"
+        
+        # Teclado normal
+        teclado_volver = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Ver más en el Panel Web", url="https://trinibot.trinovadevps.com/web/home.php")],
+            [InlineKeyboardButton("🔙 Volver al menú principal", callback_data="menu_principal")]
+        ])
 
     context.bot.send_message(chat_id, text=mensaje, parse_mode='HTML', disable_web_page_preview=True, reply_markup=teclado_volver)
     query.answer()
-
-
 def filtro_cursos(update: Update, context: CallbackContext):
     query = update.callback_query
     chat_id = query.message.chat.id

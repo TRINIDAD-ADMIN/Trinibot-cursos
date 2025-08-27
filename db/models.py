@@ -12,13 +12,23 @@ def obtener_categorias():
     conn.close()
     return categorias
 
+# Función modelo corregida
 def obtener_recursos_por_categoria(categoria_id):
     conn = get_connection()
     if not conn:
         return []
     cursor = conn.cursor(dictionary=True)
+    
+    # Primero contar el total de recursos para saber si implementar paginación
+    count_query = """SELECT COUNT(*) as total FROM recursos 
+                     WHERE categoria_id = %s AND disponible = 1"""
+    cursor.execute(count_query, (categoria_id,))
+    total_count = cursor.fetchone()['total']
+    
+    # Obtener los recursos (limitado a 20 para evitar mensajes muy largos)
     query = """SELECT titulo, descripcion, url, fecha_publicacion FROM recursos 
-               WHERE categoria_id = %s AND disponible = 1 ORDER BY fecha_publicacion DESC LIMIT 15"""
+               WHERE categoria_id = %s AND disponible = 1 
+               ORDER BY fecha_publicacion DESC LIMIT 20"""
     cursor.execute(query, (categoria_id,))
     recursos = cursor.fetchall()
     cursor.close()
@@ -28,8 +38,8 @@ def obtener_recursos_por_categoria(categoria_id):
     for r in recursos:
         if isinstance(r['fecha_publicacion'], str):
             r['fecha_publicacion'] = datetime.strptime(r['fecha_publicacion'], "%Y-%m-%d %H:%M:%S")
+    
     return recursos
-
 def guardar_usuario(telegram_id, nombre, username):
     conn = get_connection()
     if not conn:
