@@ -1,9 +1,10 @@
-name: Ejecutar Verificador de Cursos py
+name: Ejecutar Verificador de Cursos para prueba rapido
 
 on:
   schedule:
     # Ejecutar cada día a las 9:00 AM UTC (ajusta según tu zona horaria)
-    - cron: '0 9 * * *'
+   # TEMPORAL - Cada 5 minutos para pruebas
+    - cron: '*/5 * * * *'
     # Para ejecutar cada 2 días, descomenta la siguiente línea y comenta la de arriba
     # - cron: '0 9 */2 * *'
   
