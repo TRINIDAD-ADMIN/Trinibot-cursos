@@ -104,9 +104,12 @@ def categoria_seleccionada(update: Update, context: CallbackContext):
         mensaje += f"🎓 <b>{r['titulo']}</b>\n📝 {descripcion}\n🔗 <a href='{r['url']}'>Ver curso</a>\n📅 Publicado: {fecha}\n\n"
 
     # ✅ Botón para volver al menú principal al final
-    teclado_volver = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔙 Volver al menú principal", callback_data="menu_principal")]
-    ])
+    # ✅ Botón para ver más en el panel web o volver al menú
+teclado_volver = InlineKeyboardMarkup([
+    [InlineKeyboardButton("🌐 Ver más en el Panel Web", url="https://trinibot.trinovadevps.com/web/home.php")],
+    [InlineKeyboardButton("🔙 Volver al menú principal", callback_data="menu_principal")]
+])
+
 
     context.bot.send_message(chat_id, text=mensaje, parse_mode='HTML', disable_web_page_preview=True, reply_markup=teclado_volver)
     query.answer()

@@ -42,10 +42,11 @@ require_once 'conexion.php'; // ← Asegúrate de incluirlo al principio
                         <a class="nav-link" href="#">FAQ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-outline-light ms-2" href="https://t.me/TriniBot" target="_blank">
+                        <a class="btn btn-outline-light ms-2" href="https://t.me/trinidad_cursos_bot" target="_blank">
                             <i class="bi bi-telegram"></i> Ir al Bot
                         </a>
                     </li>
+
                 </ul>
             </div>
         </div>

@@ -16,11 +16,13 @@ Bot profesional para notificar cursos gratuitos y con cupones, con scraping auto
 
 - bot/: lógica Telegram
 - data/: scrapers y IA
+  data/ esta el archivo verificador_cursos.py/
 - db/: conexión y modelos
 - jobs/: tareas programadas
 - logs/: logs
 - web/: panel admin
-- main.py: entrada
+- webhook.py: entrada
+requirements.txt
 
 ## Uso
 
@@ -34,6 +36,3 @@ Respeta términos de los sitios scrappeados. Usa el bot para información legal.
 
 - python -m data.scraper_coursera: Para coger datos en la plataforma
 - python -m data.verificador_cursos: Para verificar curso disponile y no disponible (eliminar en auto desde la db los cursos no disponibles)
-
-
-

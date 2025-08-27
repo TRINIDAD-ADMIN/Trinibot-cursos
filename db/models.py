@@ -18,7 +18,7 @@ def obtener_recursos_por_categoria(categoria_id):
         return []
     cursor = conn.cursor(dictionary=True)
     query = """SELECT titulo, descripcion, url, fecha_publicacion FROM recursos 
-               WHERE categoria_id = %s AND disponible = 1 ORDER BY fecha_publicacion DESC LIMIT 5"""
+               WHERE categoria_id = %s AND disponible = 1 ORDER BY fecha_publicacion DESC LIMIT 15"""
     cursor.execute(query, (categoria_id,))
     recursos = cursor.fetchall()
     cursor.close()
@@ -52,9 +52,9 @@ def obtener_recursos_por_tipo(tipo):
     cursor = conn.cursor(dictionary=True)
 
     if tipo == "gratis":
-        cursor.execute("SELECT * FROM recursos WHERE url LIKE %s ORDER BY fecha_publicacion DESC LIMIT 10", ("%free%udemy.com%",))
+        cursor.execute("SELECT * FROM recursos WHERE url LIKE %s ORDER BY fecha_publicacion DESC LIMIT 15", ("%free%udemy.com%",))
     elif tipo == "descuento":
-        cursor.execute("SELECT * FROM recursos WHERE url LIKE %s AND url NOT LIKE %s ORDER BY fecha_publicacion DESC LIMIT 10", ("%udemy.com%", "%free%"))
+        cursor.execute("SELECT * FROM recursos WHERE url LIKE %s AND url NOT LIKE %s ORDER BY fecha_publicacion DESC LIMIT 15", ("%udemy.com%", "%free%"))
     else:
         return []
 
