@@ -1,10 +1,10 @@
-name: Ejecutar Verificador de Cursos
+name: Ejecutar Verificador de Cursos py
 
 on:
   schedule:
     # Ejecutar cada día a las 9:00 AM UTC (ajusta según tu zona horaria)
     - cron: '0 9 * * *'
-    # Ejecutar cada 2 días a las 9:00 AM UTC
+    # Para ejecutar cada 2 días, descomenta la siguiente línea y comenta la de arriba
     # - cron: '0 9 */2 * *'
   
   # Permitir ejecución manual desde GitHub
@@ -21,7 +21,7 @@ jobs:
     - name: Configurar Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'  # Ajusta según tu versión de Python
+        python-version: '3.11'  # Ajusta según la versión que uses
     
     - name: Instalar dependencias
       run: |
@@ -30,24 +30,22 @@ jobs:
     
     - name: Ejecutar verificador de cursos
       env:
-        # Aquí defines las variables de entorno que necesita tu script
-        # Estas las configurarás en GitHub Secrets
+        # Variables de entorno - configúralas en GitHub Secrets
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        # Agrega todas las variables que necesites
+        # Agrega todas las variables que use tu verificador_cursos.py
         # HOSTINGER_DB_HOST: ${{ secrets.HOSTINGER_DB_HOST }}
         # HOSTINGER_DB_USER: ${{ secrets.HOSTINGER_DB_USER }}
         # HOSTINGER_DB_PASS: ${{ secrets.HOSTINGER_DB_PASS }}
         # HOSTINGER_DB_NAME: ${{ secrets.HOSTINGER_DB_NAME }}
+        PYTHONPATH: ${{ github.workspace }}
       run: |
-        cd data
-        python verificador_cursos.py
+        python data/verificador_cursos.py
     
-    # Opcional: Notificar resultado
-    - name: Notificar éxito
+    - name: Notificar resultado
       if: success()
-      run: echo "✅ Verificador de cursos ejecutado exitosamente"
+      run: echo "✅ Verificador de cursos ejecutado exitosamente $(date)"
     
     - name: Notificar error
       if: failure()
-      run: echo "❌ Error al ejecutar verificador de cursos"
+      run: echo "❌ Error al ejecutar verificador de cursos $(date)"
