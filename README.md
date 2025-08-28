@@ -16,6 +16,7 @@ Bot profesional para notificar cursos gratuitos y con cupones, con scraping auto
 
 - bot/: lógica Telegram
 - data/: scrapers y IA
+data/scraper_discudemy.py
   data/ esta el archivo verificador_cursos.py/
 - db/: conexión y modelos
 - jobs/: tareas programadas

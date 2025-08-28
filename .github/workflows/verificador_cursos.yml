@@ -1,4 +1,4 @@
-name: Ejecutar Scraper y Verificador de Cursos actualzados
+name: Ejecutar Scraper y Verificador de Cursos v2
 on:
   schedule:
    - cron: '0 3 */2 * *'  # Cada 2 días a las 9:00 PM México (3:00 AM UTC)
@@ -46,7 +46,7 @@ jobs:
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASS: ${{ secrets.DB_PASS }}
         DB_NAME: ${{ secrets.DB_NAME }}
-        DB_PORT: ${{ secrets.DB_PORT || '3306' }}
+        DB_PORT: ${{ secrets.DB_PORT || 3306 }}
         # Variables de Telegram y admin
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
