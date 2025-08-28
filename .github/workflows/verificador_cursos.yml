@@ -1,5 +1,4 @@
-name: Ejecutar Scraper y Verificador de Cursos
-
+name: Ejecutar Scraper y Verificador de Cursos actualzados
 on:
   schedule:
    - cron: '0 3 */2 * *'  # Cada 2 días a las 9:00 PM México (3:00 AM UTC)
@@ -25,13 +24,29 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: 1️⃣ Ejecutar scraper de Discudemy
+    - name: 🔍 Debug - Verificar variables de entorno
       env:
-        # Variables de base de datos (usando tus nombres exactos)
         DB_HOST: ${{ secrets.DB_HOST }}
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASS: ${{ secrets.DB_PASS }}
         DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+      run: |
+        echo "🔍 Verificando variables de entorno..."
+        echo "DB_HOST: $DB_HOST"
+        echo "DB_USER: $DB_USER"
+        echo "DB_NAME: $DB_NAME"
+        echo "DB_PORT: ${DB_PORT:-3306}"
+        echo "DB_PASS: $(echo $DB_PASS | head -c 3)***" # Solo mostrar primeros 3 caracteres
+    
+    - name: 1️⃣ Ejecutar scraper de Discudemy
+      env:
+        # Variables de base de datos Hostinger
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PORT: ${{ secrets.DB_PORT || '3306' }}
         # Variables de Telegram y admin
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
@@ -39,7 +54,7 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
       run: |
         echo "🔍 Iniciando scraper de Discudemy..."
-        echo "🔗 Conectando a: $DB_HOST"
+        echo "🔗 Conectando a: $DB_HOST:${DB_PORT:-3306}"
         echo "👤 Usuario: $DB_USER"
         echo "🗄️ Base de datos: $DB_NAME"
         python data/scraper_discudemy.py
@@ -47,11 +62,12 @@ jobs:
     
     - name: 2️⃣ Ejecutar verificador de cursos
       env:
-        # Variables de base de datos
+        # Variables de base de datos Hostinger
         DB_HOST: ${{ secrets.DB_HOST }}
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASS: ${{ secrets.DB_PASS }}
         DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PORT: ${{ secrets.DB_PORT || '3306' }}
         # Variables de Telegram y admin
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
@@ -59,7 +75,7 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
       run: |
         echo "🔍 Iniciando verificador de cursos..."
-        echo "🔗 Conectando a: $DB_HOST"
+        echo "🔗 Conectando a: $DB_HOST:${DB_PORT:-3306}"
         python data/verificador_cursos.py
         echo "✅ Verificador de cursos completado"
     
