@@ -1,48 +1,95 @@
-name: Ejecutar Verificador de Cursos oficiall
-
+name: Ejecutar Scraper y Verificador de Cursos v2
 on:
   schedule:
-   - cron: '0 3 */2 * *'  # Cada 2 días a las 9:00 AM UTC
-  
+    - cron: '0 3 */2 * *' # Cada 2 días a las 9:00 PM México (3:00 AM UTC)
+
   # Permitir ejecución manual desde GitHub
   workflow_dispatch:
 
 jobs:
-  verificar-cursos:
+  scraper-y-verificador:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
-    
-    - name: Configurar Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'  # Ajusta según la versión que uses
-    
-    - name: Instalar dependencias
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Ejecutar verificador de cursos
-      env:
-        # Variables de entorno - configúralas en GitHub Secrets
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        # Agrega todas las variables que use tu verificador_cursos.py
-        # HOSTINGER_DB_HOST: ${{ secrets.HOSTINGER_DB_HOST }}
-        # HOSTINGER_DB_USER: ${{ secrets.HOSTINGER_DB_USER }}
-        # HOSTINGER_DB_PASS: ${{ secrets.HOSTINGER_DB_PASS }}
-        # HOSTINGER_DB_NAME: ${{ secrets.HOSTINGER_DB_NAME }}
-        PYTHONPATH: ${{ github.workspace }}
-      run: |
-        python data/verificador_cursos.py
-    
-    - name: Notificar resultado
-      if: success()
-      run: echo "✅ Verificador de cursos ejecutado exitosamente $(date)"
-    
-    - name: Notificar error
-      if: failure()
-      run: echo "❌ Error al ejecutar verificador de cursos $(date)"
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔍 Debug - Verificar variables de entorno
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+        run: |
+          echo "🔍 Verificando variables de entorno..."
+          echo "DB_HOST: $DB_HOST"
+          echo "DB_USER: $DB_USER"
+          echo "DB_NAME: $DB_NAME"
+          echo "DB_PORT: ${DB_PORT:-3306}"
+          echo "DB_PASS: $(echo $DB_PASS | head -c 3)***" # Solo mostrar primeros 3 caracteres
+
+      - name: 1️⃣ Ejecutar scraper de Discudemy
+        env:
+          # Variables de base de datos Hostinger
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT || 3306 }}
+          # Variables de Telegram y admin
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+          # Python path
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "🔍 Iniciando scraper de Discudemy..."
+          echo "🔗 Conectando a: $DB_HOST:${DB_PORT:-3306}"
+          echo "👤 Usuario: $DB_USER"
+          echo "🗄️ Base de datos: $DB_NAME"
+          python data/scraper_discudemy.py
+          echo "✅ Scraper de Discudemy completado"
+
+      - name: 2️⃣ Ejecutar verificador de cursos
+        env:
+          # Variables de base de datos Hostinger
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT || '3306' }}
+          # Variables de Telegram y admin
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+          # Python path
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "🔍 Iniciando verificador de cursos..."
+          echo "🔗 Conectando a: $DB_HOST:${DB_PORT:-3306}"
+          python data/verificador_cursos.py
+          echo "✅ Verificador de cursos completado"
+
+      - name: ✅ Proceso completado exitosamente
+        if: success()
+        run: |
+          echo "🎉 Ambos scripts ejecutados exitosamente"
+          echo "⏰ Fecha y hora: $(date)"
+          echo "📊 Scraper Discudemy ✅"
+          echo "🔍 Verificador de cursos ✅"
+
+      - name: ❌ Error en el proceso
+        if: failure()
+        run: |
+          echo "💥 Error durante la ejecución"
+          echo "⏰ Fecha y hora: $(date)"
+          echo "ℹ️ Revisa los logs anteriores para más detalles"
