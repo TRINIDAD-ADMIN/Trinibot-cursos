@@ -2,7 +2,7 @@ name: Ejecutar Scraper y Verificador de Cursos
 
 on:
   schedule:
-   - cron: '0 3 */2 * *'  # Cada 2 días a las 3:00 AM México (3:00 AM UTC)
+   - cron: '0 3 */2 * *'  # Cada 2 días a las 9:00 PM México (3:00 AM UTC)
   
   # Permitir ejecución manual desde GitHub
   workflow_dispatch:
@@ -27,26 +27,39 @@ jobs:
     
     - name: 1️⃣ Ejecutar scraper de Discudemy
       env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        # Variables de base de datos (usando tus nombres exactos)
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        # Variables de Telegram y admin
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        # Agrega todas las variables que necesiten tus scripts
-        # HOSTINGER_DB_HOST: ${{ secrets.HOSTINGER_DB_HOST }}
-        # HOSTINGER_DB_USER: ${{ secrets.HOSTINGER_DB_USER }}
-        # HOSTINGER_DB_PASSWORD: ${{ secrets.HOSTINGER_DB_PASSWORD }}
-        # HOSTINGER_DB_NAME: ${{ secrets.HOSTINGER_DB_NAME }}
+        ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+        # Python path
         PYTHONPATH: ${{ github.workspace }}
       run: |
         echo "🔍 Iniciando scraper de Discudemy..."
+        echo "🔗 Conectando a: $DB_HOST"
+        echo "👤 Usuario: $DB_USER"
+        echo "🗄️ Base de datos: $DB_NAME"
         python data/scraper_discudemy.py
         echo "✅ Scraper de Discudemy completado"
     
     - name: 2️⃣ Ejecutar verificador de cursos
       env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        # Variables de base de datos
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        # Variables de Telegram y admin
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+        # Python path
         PYTHONPATH: ${{ github.workspace }}
       run: |
         echo "🔍 Iniciando verificador de cursos..."
+        echo "🔗 Conectando a: $DB_HOST"
         python data/verificador_cursos.py
         echo "✅ Verificador de cursos completado"
     
