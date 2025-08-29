@@ -1,4 +1,4 @@
-name: Ejecutar Scraper y Verificador de Cursos v3
+name: Ejecutar Scraper y Verificador de Cursos v4
 on:
   schedule:
     - cron: '0 3 */2 * *' # Cada 2 días a las 9:00 PM México (3:00 AM UTC)
@@ -37,7 +37,7 @@ jobs:
           echo "DB_PORT: ${DB_PORT:-3306}"
           echo "DB_PASS: $(echo $DB_PASS | head -c 3)***"
 
-       - name: 1️⃣ Ejecutar scraper de Discudemy
+      - name: 1️⃣ Ejecutar scraper de Multiplatorma
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_USER: ${{ secrets.DB_USER }}
