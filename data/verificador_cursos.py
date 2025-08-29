@@ -135,7 +135,7 @@ def verificar_y_eliminar_cursos_caducados():
         enviar_notificacion_telegram(mensaje_final)
         
     except Exception as e:
-        error_msg = f"❌ Error durante verificación: {e}"
+        error_msg = f"❌ Error durante verificación de cursos: {e}"
         print(error_msg)
         enviar_notificacion_telegram(error_msg)
     finally:
